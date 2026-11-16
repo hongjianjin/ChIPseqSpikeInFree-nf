@@ -12,9 +12,12 @@ computes spike-in free scaling factors for ChIP-seq data with
 global changes in histone modification occupancy (e.g. H3K27me3 loss in H3K27M cells) without
 exogenous spike-in chromatin or peak calling.
 
-1. `CSIF_COUNT`: counts reads of all BAMs in genome-wide bins and parses the counts into
-   cumulative distributions (`run_ChIPseqSpikeInFree.R`, standard mode).
-2. `CSIF_SCALE`: computes scaling factors and QC calls and draws the distribution and box plots
+1. `CSIF_COUNT_BAM`: counts reads in genome-wide bins with ChIPseqSpikeInFree's
+   `CountRawReads()`, one job per BAM, so all BAMs are counted in parallel.
+2. `CSIF_MERGE_COUNTS`: merges the per-BAM counts into one bin x sample table.
+3. `CSIF_PARSE`: parses the merged counts into cumulative distributions
+   (`run_ChIPseqSpikeInFree.R`, standard mode, which reuses the merged counts).
+4. `CSIF_SCALE`: computes scaling factors and QC calls and draws the distribution and box plots
    from the parsed matrix (replotting mode). Changing the calibration options re-runs only this
    step, not the read counting.
 

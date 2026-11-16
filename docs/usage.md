@@ -13,7 +13,7 @@
 | `color`    | no       | R colour name or hex code for plots; used only when every row has one.        |
 
 All rows are analysed together in one ChIPseqSpikeInFree run, and samples are compared within
-each antibody. BAM file names must be unique (all BAMs are staged into one folder). Use
+each antibody. Each BAM is counted in its own job. Use
 duplicate-removed BAMs with low-quality reads filtered; no BAM index is needed.
 
 The pipeline writes the metadata file ChIPseqSpikeInFree expects (`ID`, `ANTIBODY`, `GROUP`,
@@ -52,7 +52,7 @@ Set `NXF_SINGULARITY_CACHEDIR` to a shared folder so the container is converted 
 
 ## Parameters
 
-### Read counting (`CSIF_COUNT`, standard mode)
+### Read counting (`CSIF_COUNT_BAM` per BAM, `CSIF_MERGE_COUNTS`, `CSIF_PARSE`)
 
 | Parameter       | Default | Script option  | Notes                                            |
 | --------------- | ------- | -------------- | ------------------------------------------------ |
@@ -61,7 +61,10 @@ Set `NXF_SINGULARITY_CACHEDIR` to a shared folder so the container is converted 
 | `--bin_size`    | `1000`  | `--binSize`    | 200-10000 bp                                     |
 | `--paired_end`  | `false` | `--paired`     | Count fragments of paired-end BAMs               |
 
-`--ncores` is set from the task's CPUs.
+Each BAM is counted in its own job (in parallel), the counts are merged, and `CSIF_PARSE`
+runs the script's standard mode on the merged table (`--ncores` = the task's CPUs). Changing
+any of these options re-runs the counting. BAMs with fewer than 1e6 counted reads are dropped
+with a warning, as in ChIPseqSpikeInFree itself.
 
 ### Scaling factors (`CSIF_SCALE`, replotting mode)
 
@@ -82,13 +85,15 @@ nextflow run hongjianjin/ChIPseqSpikeInFree-nf -r v1.2.6 -profile stjude --input
 
 ## Resources
 
-`CSIF_COUNT` requests 2 CPUs, 32 GB and 20 h (labels `process_medium`, `process_long`);
-`CSIF_SCALE` 1 CPU, 6 GB and 4 h. Requests double on a retry after an out-of-memory or time-limit
+`CSIF_COUNT_BAM` requests 2 CPUs, 12 GB and 20 h per BAM (labels `process_low`, `process_long`);
+`CSIF_MERGE_COUNTS` and `CSIF_PARSE` 2 CPUs, 32 GB and 8 h; `CSIF_SCALE` 1 CPU, 6 GB and 4 h.
+Raise memory for small bins (e.g. `--bin_size 200`) or many samples. Requests double on a retry after an out-of-memory or time-limit
 kill. Override them in a custom config passed with `-c`:
 
 ```groovy
 process {
-    withName: 'CSIF_COUNT' { cpus = 8; memory = 64.GB }
+    withName: 'CSIF_COUNT_BAM' { memory = 24.GB }
+    withName: 'CSIF_PARSE'     { cpus = 8; memory = 64.GB }
 }
 ```
 

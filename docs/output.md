@@ -2,11 +2,12 @@
 
 ```
 <outdir>/
-├── counts/                                  # CSIF_COUNT
+├── counts/                                  # CSIF_MERGE_COUNTS + CSIF_PARSE
+│   ├── <cohort>_rawCounts.txt               # reads per genome-wide bin per sample (merged per-BAM counts)
+│   ├── <cohort>_merge.log                   # samples merged / dropped (< 1e6 reads)
 │   ├── <cohort>_sample_meta.txt             # metadata generated from the samplesheet (ID = <sample>.bam)
-│   ├── <cohort>_rawCounts.txt               # reads per genome-wide bin per sample
 │   ├── <cohort>_parsedMatrix.txt            # cumulative read distributions used for calibration
-│   └── <cohort>_count.log
+│   └── <cohort>_parse.log
 ├── scaling_factors/                         # CSIF_SCALE
 │   ├── <cohort>_SF.txt                      # scaling factors and QC calls per sample
 │   ├── <cohort>_distribution.pdf            # cumulative distribution curves with turning points

@@ -1,5 +1,17 @@
 # ChIPseqSpikeInFree-nf: Changelog
 
+## v1.2.7dev - [unreleased]
+
+### Pipeline
+
+- Read counting runs in parallel, one job per BAM (`CSIF_COUNT_BAM`, using ChIPseqSpikeInFree's
+  `CountRawReads()`), instead of all BAMs in one job. `CSIF_MERGE_COUNTS` merges the per-BAM
+  counts and `CSIF_PARSE` (formerly part of `CSIF_COUNT`) parses the merged table with the
+  script's standard mode, so results match the single-job run.
+- BAMs with < 1e6 counted reads are dropped with a warning in `<cohort>_merge.log`, as before.
+- The cohort-wide "BAM file names must be unique" restriction is gone; each BAM is counted on its own.
+- Outputs: `counts/<cohort>_count.log` is replaced by `_merge.log` and `_parse.log`.
+
 ## v1.2.6 - 2026-11-16
 
 First release. Versioned to match the ChIPseqSpikeInFree release it runs (1.2.6).

@@ -4,8 +4,10 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { CSIF_COUNT } from '../modules/local/csif_count/main'
-include { CSIF_SCALE } from '../modules/local/csif_scale/main'
+include { CSIF_COUNT_BAM    } from '../modules/local/csif_count_bam/main'
+include { CSIF_MERGE_COUNTS } from '../modules/local/csif_merge_counts/main'
+include { CSIF_PARSE        } from '../modules/local/csif_parse/main'
+include { CSIF_SCALE        } from '../modules/local/csif_scale/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,64 +21,66 @@ workflow CHIPSEQSPIKEINFREE {
     ch_samplesheet // channel: [ val(meta), path(bam) ]
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions    = Channel.empty()
+    ch_chrom_sizes = params.chrom_sizes ? file(params.chrom_sizes, checkIfExists: true) : []
 
     //
-    // All BAMs of the cohort go into one run. Metadata in the layout ChIPseqSpikeInFree
-    // expects: ID is the file name CSIF_COUNT links each BAM to (<sample>.bam), so
-    // results are labelled by sample name. COLOR is written only when every row has one.
+    // Metadata in the layout ChIPseqSpikeInFree expects. ID is <sample>.bam, the name each
+    // BAM is linked to before counting, so results are labelled by sample name. COLOR is
+    // written only when every row has one.
     //
-    ch_rows = ch_samplesheet
-        .map { meta, bam -> [ meta, bam ] }
-        .toList()
-        .map { rows ->
-            def dups = rows.groupBy { it[1].name }.findAll { k, v -> v.size() > 1 }
-            if (dups) {
-                error("BAM file names must be unique across samples; repeated: " +
-                    dups.collect { k, v -> "${k} (${v.collect { it[0].id }.join(', ')})" }.join('; '))
-            }
-            rows.sort { it[0].id }
-        }
-
-    ch_metadata = ch_rows
-        .map { rows ->
-            def with_color = rows.every { it[0].color }
+    ch_metadata = ch_samplesheet
+        .map { meta, bam -> meta }
+        .toSortedList { a, b -> a.id <=> b.id }
+        .map { metas ->
+            def with_color = metas.every { it.color }
             def header     = [ 'ID', 'ANTIBODY', 'GROUP' ] + (with_color ? [ 'COLOR' ] : [])
-            def lines      = rows.collect { meta, bam ->
-                ( [ "${meta.id}.bam", meta.antibody, meta.group ] + (with_color ? [ meta.color ] : []) ).join('\t')
+            def lines      = metas.collect { m ->
+                ( [ "${m.id}.bam", m.antibody, m.group ] + (with_color ? [ m.color ] : []) ).join('\t')
             }
             ( [ header.join('\t') ] + lines ).join('\n') + '\n'
         }
         .collectFile(name: "${params.cohort}_sample_meta.txt")
 
-    // sample -> staged BAM file name, used to link each BAM as <sample>.bam
-    ch_bam_map = ch_rows
-        .map { rows -> rows.collect { meta, bam -> "${meta.id}\t${bam.name}" }.join('\n') + '\n' }
-        .collectFile(name: "${params.cohort}_bam_map.txt")
-
-    ch_bams = ch_rows.map { rows -> rows.collect { it[1] } }
-
-    ch_chrom_sizes = params.chrom_sizes ? file(params.chrom_sizes, checkIfExists: true) : []
+    //
+    // MODULE: count reads in genome-wide bins, one job per BAM (in parallel)
+    //
+    CSIF_COUNT_BAM (
+        ch_samplesheet,
+        ch_chrom_sizes,
+        params.genome,
+        params.bin_size,
+        params.paired_end
+    )
+    ch_versions = ch_versions.mix(CSIF_COUNT_BAM.out.versions.first())
 
     //
-    // MODULE: count reads in genome-wide bins and parse the counts
+    // MODULE: merge the per-BAM counts into one bin x sample table
     //
-    CSIF_COUNT (
+    CSIF_MERGE_COUNTS (
+        [ id: params.cohort ],
+        CSIF_COUNT_BAM.out.counts.map { meta, counts -> counts }.collect()
+    )
+    ch_versions = ch_versions.mix(CSIF_MERGE_COUNTS.out.versions)
+
+    //
+    // MODULE: parse the merged counts into cumulative distributions
+    //
+    CSIF_PARSE (
         [ id: params.cohort ],
         ch_metadata,
-        ch_bam_map,
-        ch_bams,
+        CSIF_MERGE_COUNTS.out.counts,
         ch_chrom_sizes,
         params.genome
     )
-    ch_versions = ch_versions.mix(CSIF_COUNT.out.versions)
+    ch_versions = ch_versions.mix(CSIF_PARSE.out.versions)
 
     //
     // MODULE: scaling factors, QC calls and plots from the parsed matrix
     // (re-runs alone when only calibration parameters change)
     //
     CSIF_SCALE (
-        CSIF_COUNT.out.parsed
+        CSIF_PARSE.out.parsed
     )
     ch_versions = ch_versions.mix(CSIF_SCALE.out.versions)
 
