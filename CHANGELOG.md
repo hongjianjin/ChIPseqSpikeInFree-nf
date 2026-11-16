@@ -1,6 +1,6 @@
 # ChIPseqSpikeInFree-nf: Changelog
 
-## v1.2.7dev - [unreleased]
+## v1.2.7 - 2026-11-16
 
 ### Pipeline
 

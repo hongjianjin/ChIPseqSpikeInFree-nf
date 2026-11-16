@@ -4,7 +4,7 @@ template:
   org: stjude
   description: Spike-in free ChIP-seq scaling factors with ChIPseqSpikeInFree
   author: Hongjian Jin
-  version: 1.2.7dev
+  version: 1.2.7
   is_nfcore: false
   skip_features:
     - igenomes
