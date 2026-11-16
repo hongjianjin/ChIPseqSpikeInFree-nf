@@ -1,0 +1,45 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/hongjianjin/ChIPseqSpikeInFree-nf/main/assets/schema_input.json",
+    "title": "ChIPseqSpikeInFree-nf pipeline - params.input schema",
+    "description": "Schema for the samplesheet provided with params.input",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "sample": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "errorMessage": "Sample name must be provided and may only contain letters, digits, '.', '_' and '-'",
+                "meta": ["id"]
+            },
+            "bam": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.bam$",
+                "errorMessage": "BAM file must exist and end in '.bam'"
+            },
+            "antibody": {
+                "type": "string",
+                "pattern": "^[^\\t,]+$",
+                "errorMessage": "Antibody must be provided (e.g. H3K27me3, INPUT) and may not contain tabs or commas",
+                "meta": ["antibody"]
+            },
+            "group": {
+                "type": "string",
+                "pattern": "^[^\\t,]+$",
+                "errorMessage": "Group must be provided (e.g. WT, KO) and may not contain tabs or commas",
+                "meta": ["group"]
+            },
+            "color": {
+                "type": "string",
+                "pattern": "^[^\\t,]*$",
+                "errorMessage": "Color is an R colour name or hex code (e.g. grey, #1B9E77)",
+                "meta": ["color"]
+            }
+        },
+        "required": ["sample", "bam", "antibody", "group"]
+    },
+    "uniqueEntries": ["sample"]
+}

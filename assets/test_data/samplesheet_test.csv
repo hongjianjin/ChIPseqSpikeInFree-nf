@@ -1,0 +1,7 @@
+sample,bam,antibody,group,color
+K27M_A,https://raw.githubusercontent.com/hongjianjin/ChIPseqSpikeInFree-nf/main/assets/test_data/bams/H3K27me3-K27M.A.bam,H3K27me3,K27M,green
+K27M_B,https://raw.githubusercontent.com/hongjianjin/ChIPseqSpikeInFree-nf/main/assets/test_data/bams/H3K27me3-K27M.B.bam,H3K27me3,K27M,green
+K27M_C,https://raw.githubusercontent.com/hongjianjin/ChIPseqSpikeInFree-nf/main/assets/test_data/bams/H3K27me3-K27M.C.bam,H3K27me3,K27M,green
+WT_D,https://raw.githubusercontent.com/hongjianjin/ChIPseqSpikeInFree-nf/main/assets/test_data/bams/H3K27me3-WT.D.bam,H3K27me3,WT,grey
+WT_E,https://raw.githubusercontent.com/hongjianjin/ChIPseqSpikeInFree-nf/main/assets/test_data/bams/H3K27me3-WT.E.bam,H3K27me3,WT,grey
+WT_F,https://raw.githubusercontent.com/hongjianjin/ChIPseqSpikeInFree-nf/main/assets/test_data/bams/H3K27me3-WT.F.bam,H3K27me3,WT,grey

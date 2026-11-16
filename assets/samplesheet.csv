@@ -1,0 +1,5 @@
+sample,bam,antibody,group,color
+K27M_rep1,/path/to/bams/H3K27me3-K27M.rep1.rmdup.bam,H3K27me3,K27M,green
+K27M_rep2,/path/to/bams/H3K27me3-K27M.rep2.rmdup.bam,H3K27me3,K27M,green
+WT_rep1,/path/to/bams/H3K27me3-WT.rep1.rmdup.bam,H3K27me3,WT,grey
+WT_rep2,/path/to/bams/H3K27me3-WT.rep2.rmdup.bam,H3K27me3,WT,grey

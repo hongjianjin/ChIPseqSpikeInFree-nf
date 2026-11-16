@@ -1,0 +1,11 @@
+.nextflow*
+work/
+results/
+results_test/
+testing/
+testing*
+*.pyc
+null/
+*.sif
+tmp_*.md
+tmp_test/

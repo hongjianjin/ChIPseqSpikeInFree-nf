@@ -1,0 +1,16 @@
+repository_type: pipeline
+template:
+  name: ChIPseqSpikeInFree-nf
+  org: stjude
+  description: Spike-in free ChIP-seq scaling factors with ChIPseqSpikeInFree
+  author: Hongjian Jin
+  version: 0.1.0dev
+  is_nfcore: false
+  skip_features:
+    - igenomes
+    - multiqc
+    - fastqc
+    - email
+    - slackreport
+    - adaptivecard
+    - seqera_platform
