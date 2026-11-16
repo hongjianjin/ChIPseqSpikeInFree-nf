@@ -1,5 +1,16 @@
 # ChIPseqSpikeInFree-nf: Changelog
 
+## v1.2.8dev - [unreleased]
+
+### Fixed
+
+- `CSIF_COUNT_BAM` failed on every BAM in v1.2.7 (`Error in colSums(datOut[, -1]): 'x' must be
+  an array of at least two dimensions`): ChIPseqSpikeInFree's `CountRawReads()` cannot count a
+  single BAM. The task now runs the same counting steps as `CountRawReads()` (`GenerateBins()`,
+  `summarizeOverlaps()`, the same chr naming and 1e6-read cut-off) on one BAM. Checked on the
+  Rsamtools example BAM: per-BAM counts merged by `CSIF_MERGE_COUNTS` are identical to
+  `CountRawReads()` on the same BAMs.
+
 ## v1.2.7 - 2026-11-16
 
 ### Pipeline

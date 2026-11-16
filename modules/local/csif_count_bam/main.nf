@@ -27,28 +27,49 @@ process CSIF_COUNT_BAM {
     ln -s "${bam}" "${meta.id}.bam"
 
     cat <<'END_R' > count_bam.R
-    suppressMessages(library(ChIPseqSpikeInFree))
+    # Counting as in ChIPseqSpikeInFree::CountRawReads(), for one BAM. CountRawReads() itself
+    # cannot take a single BAM: it drops the bin column with datOut[, -1], gets a vector, and
+    # fails in colSums(). The steps below are its own, applied to one BAM.
+    suppressMessages({
+        library(ChIPseqSpikeInFree)
+        library(Rsamtools)
+        library(GenomicAlignments)
+    })
     args <- commandArgs(trailingOnly = TRUE)
     bam <- args[1]; chrom <- args[2]; prefix <- args[3]
     single_end <- as.logical(args[4]); bin_size <- as.numeric(args[5])
+    min_reads <- 1e6   # CountRawReads drops samples with total counts not above 10^6
     out <- paste0(prefix, "_rawCounts.txt")
 
-    # Same counting as standard mode of run_ChIPseqSpikeInFree.R, one BAM at a time
-    res <- tryCatch(
-        CountRawReads(bamFiles = bam, chromFile = chrom, prefix = prefix,
-                      singleEnd = single_end, binSize = bin_size),
-        error = function(e) e
+    # Bins named with or without 'chr', matching the BAM header (CountRawReads: ChrCheck)
+    targets  <- names(scanBamHeader(bam)[[1]][["targets"]])
+    with_chr <- any(grepl("^chr", targets))
+    bins <- GenerateBins(chromFile = chrom, binSize = bin_size, overlap = 0, withChr = with_chr)
+    coords <- GRanges(
+        seqnames = bins[, 1],
+        ranges   = IRanges(start = bins[, 2], end = bins[, 3],
+                           names = paste0(bins[, 1], ":", bins[, 2], "-", bins[, 3])),
+        strand   = "+"
     )
-    if (inherits(res, "error")) {
-        # CountRawReads drops BAMs with < 1e6 counted reads; it then writes the bin column only
-        # and fails when returning. Keep that file so the merge step drops the sample, as the
-        # single-job run would; any other failure is fatal.
-        if (file.exists(out)) {
-            message("WARNING: ", basename(bam), " dropped by ChIPseqSpikeInFree ",
-                    "(library size < 1e6 reads or no counts): ", conditionMessage(res))
-        } else {
-            stop(res)
-        }
+    bamlist <- BamFileList(bam, yieldSize = 5e4)
+    names(bamlist) <- basename(bam)
+    counts <- summarizeOverlaps(features = coords, reads = bamlist,
+                                ignore.strand = TRUE, singleEnd = single_end)
+    dat <- as.data.frame(SummarizedExperiment::assay(counts))
+    res <- data.frame(bin = rownames(dat), dat, check.names = FALSE)
+
+    options(scipen = 99)
+    total <- sum(as.numeric(dat[[1]]))
+    if (total > min_reads) {
+        write.table(res, out, sep = "\\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+        message(basename(bam), ": ", format(total, big.mark = ","), " reads counted in ",
+                nrow(res), " bins")
+    } else {
+        # Bin column only: the merge step drops this sample, as CountRawReads would
+        write.table(res[, "bin", drop = FALSE], out, sep = "\\t", quote = FALSE,
+                    row.names = FALSE, col.names = TRUE)
+        message("WARNING: ", basename(bam), " dropped: library size ",
+                format(total, big.mark = ","), " <= 1e6 counted reads (as in ChIPseqSpikeInFree)")
     }
     END_R
 
