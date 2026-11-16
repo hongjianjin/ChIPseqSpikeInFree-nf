@@ -1,24 +1,19 @@
 # ChIPseqSpikeInFree-nf: Changelog
 
-## v1.2.8dev - [unreleased]
+## v1.2.8 - 2026-11-16
 
-### Fixed
-
-- `CSIF_COUNT_BAM` failed on every BAM in v1.2.7 (`Error in colSums(datOut[, -1]): 'x' must be
-  an array of at least two dimensions`): ChIPseqSpikeInFree's `CountRawReads()` cannot count a
-  single BAM. The task now runs the same counting steps as `CountRawReads()` (`GenerateBins()`,
-  `summarizeOverlaps()`, the same chr naming and 1e6-read cut-off) on one BAM. Checked on the
-  Rsamtools example BAM: per-BAM counts merged by `CSIF_MERGE_COUNTS` are identical to
-  `CountRawReads()` on the same BAMs.
-
-## v1.2.7 - 2026-11-16
+v1.2.7 was withdrawn (its per-BAM counting failed on every BAM); this release replaces it.
 
 ### Pipeline
 
-- Read counting runs in parallel, one job per BAM (`CSIF_COUNT_BAM`, using ChIPseqSpikeInFree's
-  `CountRawReads()`), instead of all BAMs in one job. `CSIF_MERGE_COUNTS` merges the per-BAM
-  counts and `CSIF_PARSE` (formerly part of `CSIF_COUNT`) parses the merged table with the
-  script's standard mode, so results match the single-job run.
+- Read counting runs in parallel, one job per BAM (`CSIF_COUNT_BAM`), instead of all BAMs in
+  one job. Each task runs the counting steps of ChIPseqSpikeInFree's `CountRawReads()`
+  (`GenerateBins()`, `summarizeOverlaps()`, the same chr naming and 1e6-read cut-off) on one BAM;
+  `CountRawReads()` itself cannot count a single BAM.
+- `CSIF_MERGE_COUNTS` merges the per-BAM counts into `<cohort>_rawCounts.txt`, and `CSIF_PARSE`
+  (formerly part of `CSIF_COUNT`) parses it with the script's standard mode, which reuses the
+  merged table. On the Rsamtools example BAM, the merged per-BAM counts are byte-identical to
+  `CountRawReads()` on the same BAMs.
 - BAMs with < 1e6 counted reads are dropped with a warning in `<cohort>_merge.log`, as before.
 - The cohort-wide "BAM file names must be unique" restriction is gone; each BAM is counted on its own.
 - Outputs: `counts/<cohort>_count.log` is replaced by `_merge.log` and `_parse.log`.
