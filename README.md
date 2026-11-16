@@ -38,7 +38,7 @@ Run on the St. Jude HPC with the [nf-core `stjude` institutional profile](https:
 
 ```bash
 nextflow run hongjianjin/ChIPseqSpikeInFree-nf \
-    -r main \
+    -r v1.2.6 \
     -profile stjude \
     --input samplesheet.csv \
     --outdir results \
@@ -53,6 +53,8 @@ older, use a conda environment, which bundles its own Java:
 conda create -n nextflow -c conda-forge -c bioconda nextflow=24.10.5
 conda activate nextflow
 ```
+
+`-r v1.2.6` pins this release; use `-r main -latest` for the development version.
 
 `-profile stjude` is pulled from [nf-core/configs](https://github.com/nf-core/configs) at runtime.
 On nodes without internet access, clone nf-core/configs and pass `--custom_config_base /path/to/configs`.

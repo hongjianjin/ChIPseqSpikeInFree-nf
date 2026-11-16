@@ -35,7 +35,7 @@ Then, in each session:
 ```bash
 module load conda3/202402
 conda activate nextflow
-nextflow run hongjianjin/ChIPseqSpikeInFree-nf -r main -profile stjude --input samplesheet.csv --genome hg38 --outdir results
+nextflow run hongjianjin/ChIPseqSpikeInFree-nf -r v1.2.6 -profile stjude --input samplesheet.csv --genome hg38 --outdir results
 ```
 
 The `stjude` profile from nf-core/configs submits each process as an LSF job, picks the queue
@@ -45,7 +45,7 @@ long-running job, not on a login node, e.g.
 ```bash
 bsub -q standard -n 1 -M 8000 -W 72:00 -J csif -oo csif.log \
     "source \$(conda info --base)/etc/profile.d/conda.sh; conda activate nextflow; \
-     nextflow run hongjianjin/ChIPseqSpikeInFree-nf -r main -profile stjude --input samplesheet.csv --genome hg38 --outdir results -resume"
+     nextflow run hongjianjin/ChIPseqSpikeInFree-nf -r v1.2.6 -profile stjude --input samplesheet.csv --genome hg38 --outdir results -resume"
 ```
 
 Set `NXF_SINGULARITY_CACHEDIR` to a shared folder so the container is converted only once.
@@ -76,7 +76,7 @@ With `-resume`, changing only these options re-runs `CSIF_SCALE` from the parsed
 read counting is reused. Example for H3K9me3:
 
 ```bash
-nextflow run hongjianjin/ChIPseqSpikeInFree-nf -r main -profile stjude --input samplesheet.csv \
+nextflow run hongjianjin/ChIPseqSpikeInFree-nf -r v1.2.6 -profile stjude --input samplesheet.csv \
     --genome hg38 --outdir results --max_last_turn 0.97 --cutoff_qc 1 -resume
 ```
 
