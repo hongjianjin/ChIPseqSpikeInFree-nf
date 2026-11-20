@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/hongjianjin/ChIPseqSpikeInFree-nf/main/assets/schema_input.json",
-    "title": "ChIPseqSpikeInFree-nf pipeline - params.input schema",
+    "title": "ChIPseqSpikeInFree-bigwig-nf pipeline - params.input schema",
     "description": "Schema for the samplesheet provided with params.input",
     "type": "array",
     "items": {
@@ -13,12 +13,16 @@
                 "errorMessage": "Sample name must be provided and may only contain letters, digits, '.', '_' and '-'",
                 "meta": ["id"]
             },
-            "bam": {
+            "bigwig": {
                 "type": "string",
-                "format": "file-path",
-                "exists": true,
-                "pattern": "^\\S+\\.bam$",
-                "errorMessage": "BAM file must exist and end in '.bam'"
+                "pattern": "^\\S+\\.(bw|bigwig|bigWig|BigWig)$",
+                "errorMessage": "bigWig must be a local path or an http(s)/ftp URL ending in .bw or .bigWig (no spaces). A local file must exist; a URL is read in place with range requests"
+            },
+            "reads": {
+                "type": "integer",
+                "minimum": 1,
+                "errorMessage": "Optional 'reads' is the number of mapped reads in the sample (a whole number); it sets the pseudo read total. Samples with fewer than 1e6 reads are dropped, as in ChIPseqSpikeInFree",
+                "meta": ["reads"]
             },
             "antibody": {
                 "type": "string",
@@ -39,7 +43,7 @@
                 "meta": ["color"]
             }
         },
-        "required": ["sample", "bam", "antibody", "group"]
+        "required": ["sample", "bigwig", "antibody", "group"]
     },
     "uniqueEntries": ["sample"]
 }

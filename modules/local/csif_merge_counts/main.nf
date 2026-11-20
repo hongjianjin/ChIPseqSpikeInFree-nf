@@ -25,28 +25,29 @@ process CSIF_MERGE_COUNTS {
     files  <- sort(args[-1])
     options(scipen = 99)
 
-    # Samples dropped by CountRawReads (library size < 1e6) have no count column
+    # Pseudo read counts from bigWig signal are fractional, so columns are read as numeric (the
+    # BAM pipeline reads integers). A file with only the bin column carries no counts.
     tabs <- lapply(files, function(f) {
         hdr <- strsplit(readLines(f, n = 1), "\\t", fixed = TRUE)[[1]]
         if (length(hdr) < 2 || !identical(hdr[1], "bin")) return(NULL)
         read.delim(f, check.names = FALSE, stringsAsFactors = FALSE,
-                   colClasses = c("character", rep("integer", length(hdr) - 1)))
+                   colClasses = c("character", rep("numeric", length(hdr) - 1)))
     })
     ok <- !vapply(tabs, is.null, logical(1))
     if (any(!ok)) {
-        message("WARNING: dropped (library size < 1e6 reads or no counts): ",
+        message("WARNING: dropped (no counts): ",
                 paste(basename(files[!ok]), collapse = ", "))
     }
     tabs <- tabs[ok]
-    if (length(tabs) == 0) stop("No BAM has counts to merge")
+    if (length(tabs) == 0) stop("No bigWig has counts to merge")
 
-    # Every BAM was counted on the same genome-wide bins, in the same order. Labels differ only
-    # in chromosome notation (chr1 vs 1) for BAMs without a 'chr' prefix.
+    # Every bigWig was binned on the same genome-wide bins, in the same order. Labels differ only
+    # in chromosome notation (chr1 vs 1) between bigWigs with and without a 'chr' prefix.
     norm <- function(x) sub("^M:", "MT:", sub("^chr", "", x))
     ref  <- norm(tabs[[1]][["bin"]])
     for (i in seq_along(tabs)) {
         if (nrow(tabs[[i]]) != length(ref) || !identical(norm(tabs[[i]][["bin"]]), ref)) {
-            stop("Bins differ between per-BAM count files (check genome / bin size): ", files[ok][i])
+            stop("Bins differ between per-bigWig count files (check genome / bin size): ", files[ok][i])
         }
     }
 

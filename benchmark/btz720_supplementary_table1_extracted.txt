@@ -1,0 +1,83 @@
+Supplementary Materials for ChIPseqSpikeInFree: A ChIP-seq normalization approach to reveal global changes in histone modifications without spike-in
+Supplementary Figure 1. Distinct patterns of genome-wide read distribution between K27M-H3K27me3 and WT-H3K27me3 ChIP-seq and input samples. (a) Cumulative proportion of reads below CPMW cutoffs in mouse H3K27me3 ChIP-seq data from WT and K27M H-NSCs. Bar graph depicts the proportion of reads in two categories of H3K27me3 enrichment levels (low and high) on the basis of a CPMW cutoff in WT. Fold change (FC) represents the average scaling factor ratio of H3.3K27M to H3.3WT in highly enriched regions. Error bars indicate the standard deviations of biological replicates. Statistical analysis of H3.3K27M in comparison with H3.WT samples was performed with a two-sample t test. (b,c) Cumulative proportion of reads below CPMW cutoffs in mouse and human ChIP input samples.
+Supplementary Figure 2. Validation of selected features for ChIPseqSpikeInFree normalization in additional ChIP-seq data. (a) H3K27me3, (b) H3K27ac, and (c) H3K4me3 ChIP-seq data from mouse DIPGs (Larson et al., 2019). Fold change (FC) represents the average scaling factor ratio of H3.3K27M to H3.3WT in highly enriched regions. Error bars indicate the standard deviations of biological replicates. Statistical analysis of H3.3K27M in comparison with H3.WT samples was performed with a two-sample t test.
+Supplementary Figure 3. Validation of selected features for ChIPseqSpikeInFree normalization in histone H3K27me3 ChIP-seq from three human cell lines (a) BT245, (b) DIPGXIII, (c) G477 with knockin of H3.3 K27M or K27R or knockout of H3.3 K27M (Harutyunyan et al., 2019) and (d) mouse NPCs (Pathania et al., 2017). Fold change (FC) represents the average scaling factor ratio of H3.3K27M to H3.3WT (or H3.3 K27R) in highly enriched regions. Error bars indicate the standard deviations of biological replicates. Statistical analysis of H3.3K27M in comparison with H3.WT (or H3.3 K27R) samples was performed with a two-sample t test when enough replicates were available.
+Supplementary Figure 4. Validation of selected features for ChIPseqSpikeInFree normalization in histone (a) H3K36me2 and (b) H3K36me3 ChIP-seq from human chondrocyte cell line T/C28a2 with knockin of H3.3K36M or H3.3WT (Fang et al., 2016). Fold change (FC) represents the average scaling factor ratio of H3.3K36M to H3.3WT in highly enriched regions. Error bars indicate the standard deviations of biological replicates. Statistical analysis of H3.3K36M in comparison with H3.WT samples was performed with a two-sample t test when enough replicates were available.
+Supplementary Figure 5. ChIPseqSpikeInFree reveals total H3K79me2 changes following drug treatment. Histone H3K79me2 ChIP-seq samples were from human cute monocytic leukemia MV4-11 cells treated with inhibitor EPZ-5676 (Orlando et al., 2014). (a) Curves showing differential cumulative distribution of H3K79me2 reads with increasing drug concentrations. (b) Scaling factors derived from ChIPseqSpikeInFree and Drosophila DNA spike-in normalization are highly correlated. Colors match the concentration of EPZ5676 used in each sample.
+Supplementary Figure 6. ChIPseqSpikeInFree reveals complete loss of H2Bub during the mouse myogenic differentiation from myoblasts to myotubes consistent with the finding from the paper [GSE34960]. SF represents scaling factors and NA indicates sample with poor enrichment or complete loss of enrichment where SF is not applicable.
+Supplementary Table 1. Spike-in and ChIPseqSpikeInFree scaling factors reflecting total histone mark levels.
+<<TABLE 1>>
+Sample_source | Sample_group | Scaling factor (SpikeIn) | Scaling factor (ChIPseqSpikeInFree) | Histone mark
+Dataset 1 (Jon et al., 2019)
+GSM2895616 | DIPG.H3K27Ac.K27M | 1.04 | 2.17 | H3K27Ac
+GSM2895619 | DIPG.H3K27Ac.K27M | 1.05 | 1.33 | H3K27Ac
+GSM2895623 | DIPG.H3K27Ac.K27M | 1.07 | 1.14 | H3K27Ac
+GSM2895626 | DIPG.H3K27Ac.K27M | 1.17 | 1.01 | H3K27Ac
+GSM2895629 | DIPG.H3K27Ac.K27M | 1.03 | 1 | H3K27Ac
+GSM2895650 | DIPG.H3K27Ac.K27M | 1 | 1.31 | H3K27Ac
+GSM2895632 | DIPG.H3K27Ac.WT | 1.43 | 2.5 | H3K27Ac
+GSM2895636 | DIPG.H3K27Ac.WT | 1.33 | 2.08 | H3K27Ac
+GSM2895639 | DIPG.H3K27Ac.WT | 1.49 | 2.11 | H3K27Ac
+GSM2895643 | DIPG.H3K27Ac.WT | 1.35 | 2.46 | H3K27Ac
+GSM2895647 | DIPG.H3K27Ac.WT | 1.39 | 2.16 | H3K27Ac
+GSM2895614 | DIPG.H3K27me3.K27M | 4.8 | 7.99 | H3K27me3
+GSM2895617 | DIPG.H3K27me3.K27M | 4.18 | 6.11 | H3K27me3
+GSM2895621 | DIPG.H3K27me3.K27M | 4.46 | 22.42 | H3K27me3
+GSM2895624 | DIPG.H3K27me3.K27M | 4.42 | 6.44 | H3K27me3
+GSM2895627 | DIPG.H3K27me3.K27M | 2.78 | 4.72 | H3K27me3
+GSM2895648 | DIPG.H3K27me3.K27M | 4.64 | 7.37 | H3K27me3
+GSM2895630 | DIPG.H3K27me3.WT | 1 | 1.98 | H3K27me3
+GSM2895634 | DIPG.H3K27me3.WT | 1.16 | 2.51 | H3K27me3
+GSM2895637 | DIPG.H3K27me3.WT | 1.28 | 2.8 | H3K27me3
+GSM2895641 | DIPG.H3K27me3.WT | 1.31 | 2.52 | H3K27me3
+GSM2895645 | DIPG.H3K27me3.WT | 1.04 | 1 | H3K27me3
+GSM2895620 | DIPG.H3K4me3.K27M | 1.28 | 1.58 | H3K4me3
+GSM2895651 | DIPG.H3K4me3.K27M | 1.34 | 1.76 | H3K4me3
+GSM2895633 | DIPG.H3K4me3.WT | 1.03 | 1.32 | H3K4me3
+GSM2895640 | DIPG.H3K4me3.WT | 1 | 1 | H3K4me3
+GSM2895644 | DIPG.H3K4me3.WT | 1.06 | 1.82 | H3K4me3
+GSM2895657 | H-NSC.H3K27me3.K27M | 4.39 | 5.47 | H3K27me3
+GSM2895664 | H-NSC.H3K27me3.K27M | 3.46 | 4.73 | H3K27me3
+GSM2895671 | H-NSC.H3K27me3.K27M | 5.75 | 4.41 | H3K27me3
+GSM2895655 | H-NSC.H3K27me3.WT | 1.69 | 1 | H3K27me3
+GSM2895662 | H-NSC.H3K27me3.WT | 1 | 1.38 | H3K27me3
+GSM2895669 | H-NSC.H3K27me3.WT | 1.12 | 1.51 | H3K27me3
+Dataset 2 (Pathania et al., 2017)
+GSM2498148 | NPC.H3K27me3.K27M | 3.68 | 2.83 | H3K27me3
+GSM2498146 | NPC.H3K27me3.WT | 1 | 1 | H3K27me3
+GSM2498154 | NPC.H3K27me3.K27M | 7.47 | 6.05 | H3K27me3
+GSM2498152 | NPC.H3K27me3.WT | 1.6 | 1.13 | H3K27me3
+Dataset 3 (Harutyunyan et al., 2019)
+Source: GenAP portal (https://datahub-jv6f4mbl.udes.genap.ca/chipseq/raw/) |  | 
+BT245-K27M1_H3K27me3.bam | BT245.H3K27me3.K27M | 16.21 | 15.11 | H3K27me3
+BT245-K27M2_H3K27me3.bam | BT245.H3K27me3.K27M | 6.83 | 10.11 | H3K27me3
+BT245-KO1_H3K27me3.bam | BT245.H3K27me3.K27M-KO | 1.05 | 1 | H3K27me3
+BT245-KO2_H3K27me3.bam | BT245.H3K27me3.K27M-KO | 1 | 1.61 | H3K27me3
+DIPGVI-K27M1_H3K27me3.bam | DIPGXIII.H3K27me3.K27M | 4.27 | 7.14 | H3K27me3
+DIPGXIII-KO1_H3K27me3.bam | DIPGXIII.H3K27me3.K27M-KO | 1 | 1 | H3K27me3
+DIPGXIII-KO2_H3K27me3.bam | DIPGXIII.H3K27me3.K27M-KO | 1.32 | 2.11 | H3K27me3
+G477-K27R_H3K27me3.bam | G477.H3K27me3.K27R | 1 | 1.2 | H3K27me3
+G477-K27M_H3K27me3.bam | G477.H3K27me3.K27M | 24 | 26.88 | H3K27me3
+Dataset 4 (Fang et al., 2016)
+GSM1946463 | T/C28a2.H3K36me2.K36M | 4.3 | 2.38 | H3K36me2
+GSM1946465 | T/C28a2.H3K36me2.K36M | 4 | 3.11 | H3K36me2
+GSM1946467 | T/C28a2.H3K36me2.WT | 1 | 2.36 | H3K36me2
+GSM1946464 | T/C28a2.H3K36me2.K36M | 8.5 | 3.06 | H3K36me2
+GSM1946466 | T/C28a2.H3K36me2.K36M | 7.2 | 1 | H3K36me2
+GSM1946468 | T/C28a2.H3K36me2.WT | 1 | 1 | H3K36me2
+GSM1946469 | T/C28a2.H3K36me3.K36M | 3.04 | 1.4 | H3K36me3
+GSM1946470 | T/C28a2.H3K36me3.K36M | 2.07 | 1.77 | H3K36me3
+GSM1946471 | T/C28a2.H3K36me3.K36M | 2.28 | 1.28 | H3K36me3
+GSM1946472 | T/C28a2.H3K36me3.K36M | 2.01 | 1.71 | H3K36me3
+GSM1946473 | T/C28a2.H3K36me3.WT | 1 | 1 | H3K36me3
+GSM1946474 | T/C28a2.H3K36me3.WT | 1 | 1 | H3K36me3
+Dataset 5 (Orlando et al., 2016)
+GSM1465011 | MV4-11.H3K4me3_0nM | 1.00 | 1.06 | H3K4me3
+GSM1465012 | MV4-11.H3K4me3_0.5nM | 1.09 | 1 | H3K4me3
+GSM1465013 | MV4-11.H3K4me3_2nM | 1.19 | 1.01 | H3K4me3
+GSM1465014 | MV4-11.H3K4me3_5nM | 1.14 | 1.23 | H3K4me3
+GSM1465015 | MV4-11.H3K79me2_0nM | 1.00 | 1 | H3K79me2
+GSM1465016 | MV4-11.H3K79me2_0.5nM | 1.70 | 1.42 | H3K79me2
+GSM1465017 | MV4-11.H3K79me2_2nM | 2.48 | 1.69 | H3K79me2
+GSM1465018 | MV4-11.H3K79me2_5nM | 4.09 | 2.37 | H3K79me2
+<<END TABLE>>

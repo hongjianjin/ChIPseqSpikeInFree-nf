@@ -1,8 +1,8 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/hongjianjin/ChIPseqSpikeInFree-nf/main/nextflow_schema.json",
-    "title": "ChIPseqSpikeInFree-nf pipeline parameters",
-    "description": "Spike-in free ChIP-seq scaling factors with ChIPseqSpikeInFree",
+    "title": "ChIPseqSpikeInFree-bigwig-nf pipeline parameters",
+    "description": "Spike-in free ChIP-seq scaling factors with ChIPseqSpikeInFree, from bigWig coverage tracks",
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -22,8 +22,8 @@
                     "schema": "assets/schema_input.json",
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.(csv|tsv)$",
-                    "description": "Path to a CSV/TSV samplesheet with columns sample, bam, antibody, group and optional color.",
-                    "help_text": "One row per BAM. All rows are analysed together in one ChIPseqSpikeInFree run. Use duplicate-removed BAMs with low-quality reads filtered (e.g. MAPQ >= 1).",
+                    "description": "Path to a CSV/TSV samplesheet with columns sample, bigwig, antibody, group and optional color and reads.",
+                    "help_text": "One row per bigWig (local path or http(s)/ftp URL). All rows are analysed together in one ChIPseqSpikeInFree run, so include every sample that should be comparable. The bigWig must be a non-negative coverage track of duplicate-removed, unique reads; a constant per-sample scaling (RPM, spike-in factor) is fine, input-subtracted or log-ratio tracks are not.",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
@@ -41,11 +41,11 @@
                 }
             }
         },
-        "read_counting_options": {
-            "title": "Read counting options",
+        "bigwig_binning_options": {
+            "title": "bigWig binning options",
             "type": "object",
             "fa_icon": "fas fa-calculator",
-            "description": "Options for counting reads in genome-wide bins (changing them re-runs CSIF_COUNT).",
+            "description": "Options for summing bigWig signal in genome-wide bins (changing them re-runs CSIF_BIN_BIGWIG).",
             "properties": {
                 "genome": {
                     "type": "string",
@@ -71,13 +71,21 @@
                     "default": 1000,
                     "minimum": 200,
                     "maximum": 10000,
-                    "description": "Bin size (bp) for read counting; 200-10000.",
+                    "description": "Bin size (bp); 200-10000.",
                     "fa_icon": "fas fa-ruler-horizontal"
                 },
-                "paired_end": {
+                "pseudo_depth": {
+                    "type": "integer",
+                    "default": 20000000,
+                    "minimum": 2000000,
+                    "description": "Pseudo read total per sample, used when the samplesheet has no 'reads' column.",
+                    "help_text": "ChIPseqSpikeInFree divides each sample by its own total, so this number cancels; it only has to exceed the 1e6-read cut-off of the method. Give the real read counts in a 'reads' column to apply that cut-off to real library sizes.",
+                    "fa_icon": "fas fa-hashtag"
+                },
+                "approx_summary": {
                     "type": "boolean",
-                    "description": "Count BAMs as paired-end (fragments) instead of single-end reads.",
-                    "fa_icon": "fas fa-exchange-alt"
+                    "description": "Allow zoom-level summaries when reading bigWigs (faster for remote files, approximate).",
+                    "fa_icon": "fas fa-tachometer-alt"
                 }
             }
         },
@@ -126,8 +134,8 @@
             "properties": {
                 "chipseqspikeinfree_container": {
                     "type": "string",
-                    "default": "ghcr.io/hongjianjin/chipseqspikeinfree:1.2.6",
-                    "description": "Docker image or local .sif file with R and ChIPseqSpikeInFree (see containers/chipseqspikeinfree/Dockerfile).",
+                    "default": "ghcr.io/hongjianjin/chipseqspikeinfree-bigwig:0.1.0",
+                    "description": "Docker image or local .sif file with R, ChIPseqSpikeInFree, Python and pybigtools (see containers/chipseqspikeinfree-bigwig/Dockerfile).",
                     "fa_icon": "fab fa-docker"
                 }
             }
@@ -249,7 +257,7 @@
             "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/$defs/read_counting_options"
+            "$ref": "#/$defs/bigwig_binning_options"
         },
         {
             "$ref": "#/$defs/scaling_factor_options"

@@ -1,15 +1,18 @@
-name: Build ChIPseqSpikeInFree container
+name: Build ChIPseqSpikeInFree-bigwig container
 
 on:
   workflow_dispatch:
     inputs:
-      csif_ref:
-        description: "stjude/ChIPseqSpikeInFree git tag to install"
-        default: "1.2.6"
+      image_tag:
+        description: "tag of ghcr.io/<owner>/chipseqspikeinfree-bigwig to publish"
+        default: "0.1.0"
+      base_image:
+        description: "ChIPseqSpikeInFree image to extend"
+        default: "ghcr.io/hongjianjin/chipseqspikeinfree:1.2.6"
   push:
     branches: [main]
     paths:
-      - "containers/chipseqspikeinfree/**"
+      - "containers/chipseqspikeinfree-bigwig/**"
       - ".github/workflows/build-container.yml"
 
 jobs:
@@ -19,7 +22,8 @@ jobs:
       contents: read
       packages: write
     env:
-      REF: ${{ github.event.inputs.csif_ref || '1.2.6' }}
+      TAG: ${{ github.event.inputs.image_tag || '0.1.0' }}
+      BASE: ${{ github.event.inputs.base_image || 'ghcr.io/hongjianjin/chipseqspikeinfree:1.2.6' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,16 +35,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set image tag
-        run: echo "TAG=${REF#v}" >> "$GITHUB_ENV"
-
       - uses: docker/build-push-action@v6
         with:
-          context: containers/chipseqspikeinfree
-          build-args: CSIF_REF=${{ env.REF }}
+          context: containers/chipseqspikeinfree-bigwig
+          build-args: BASE=${{ env.BASE }}
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/chipseqspikeinfree:${{ env.TAG }}
-            ghcr.io/${{ github.repository_owner }}/chipseqspikeinfree:latest
+            ghcr.io/${{ github.repository_owner }}/chipseqspikeinfree-bigwig:${{ env.TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Smoke test
+        run: |
+          docker run --rm ghcr.io/${{ github.repository_owner }}/chipseqspikeinfree-bigwig:${{ env.TAG }} \
+            python3 -c "import pybigtools, numpy, requests; print('pybigtools', pybigtools.__file__)"
+          docker run --rm ghcr.io/${{ github.repository_owner }}/chipseqspikeinfree-bigwig:${{ env.TAG }} \
+            Rscript -e 'library(ChIPseqSpikeInFree); stopifnot(file.exists(system.file("scripts/run_ChIPseqSpikeInFree.R", package = "ChIPseqSpikeInFree")))'

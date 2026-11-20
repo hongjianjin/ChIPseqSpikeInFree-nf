@@ -1,110 +1,132 @@
-# ChIPseqSpikeInFree-nf
+# ChIPseqSpikeInFree-bigwig-nf
 
 [![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.10.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
-[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
-[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
+
+**Status: development (v0.1.0dev).** The Python binning tool and the R parse/scale steps are tested
+(see [benchmark/](benchmark/)). The Nextflow wiring has **not been run** (it was written on a Windows
+host without Java, Nextflow or Docker) and the container image has **not been built**. Run the stub
+test and build the image before trusting a real run.
 
 ## Introduction
 
-**ChIPseqSpikeInFree-nf** is a Nextflow pipeline, laid out following nf-core conventions, that
-computes spike-in free scaling factors for ChIP-seq data with
-[ChIPseqSpikeInFree](https://github.com/stjude/ChIPseqSpikeInFree). The scaling factors reveal
-global changes in histone modification occupancy (e.g. H3K27me3 loss in H3K27M cells) without
-exogenous spike-in chromatin or peak calling.
+A variant of [ChIPseqSpikeInFree-nf](https://github.com/hongjianjin/ChIPseqSpikeInFree-nf) that takes
+**bigWig coverage tracks instead of BAM files**. It is for data where only bigWigs are available, such
+as the processed tracks of public repositories (GEO, ChIP-Atlas), and it can read bigWigs over HTTP
+without downloading them.
 
-1. `CSIF_COUNT_BAM`: counts reads in genome-wide bins with ChIPseqSpikeInFree's
-   `CountRawReads()`, one job per BAM, so all BAMs are counted in parallel.
-2. `CSIF_MERGE_COUNTS`: merges the per-BAM counts into one bin x sample table.
-3. `CSIF_PARSE`: parses the merged counts into cumulative distributions
-   (`run_ChIPseqSpikeInFree.R`, standard mode, which reuses the merged counts).
-4. `CSIF_SCALE`: computes scaling factors and QC calls and draws the distribution and box plots
-   from the parsed matrix (replotting mode). Changing the calibration options re-runs only this
-   step, not the read counting.
+ChIPseqSpikeInFree estimates scaling factors from how reads are spread over genome-wide bins: it
+turns each sample into the cumulative proportion of reads below a series of bin-CPM cutoffs and
+reads the scaling factor from turning points of that curve. `ParseReadCounts()` divides every sample
+by its own bin total first, so only the *relative* signal of the bins matters, and a bigWig can
+supply it.
+
+1. `CSIF_BIN_BIGWIG`: one job per bigWig. Builds the same bins as `GenerateBins()`, sums the bigWig
+   signal over each bin, rescales to pseudo read counts and writes `<sample>_rawCounts.txt`
+   (`bin/csif_bigwig_bin.py`). Rejects negative-valued tracks and wrong assemblies.
+2. `CSIF_MERGE_COUNTS`: merges the per-sample tables into one bin x sample table (numeric columns).
+3. `CSIF_PARSE`: unchanged from the BAM pipeline (`run_ChIPseqSpikeInFree.R`, standard mode).
+4. `CSIF_SCALE`: unchanged (replotting mode); changing calibration options re-runs only this step.
+
+## What a bigWig must be
+
+* a **non-negative coverage track** of the ChIP sample: read pileup from duplicate-removed, uniquely
+  mapped reads (what the BAM pipeline asks for);
+* any **constant per-sample scaling** is fine (RPM, RPGC, a spike-in factor). It cancels in the
+  CPM step: in a test, scaling the counts by random per-sample factors changed the parsed matrix by
+  at most 1.1e-15 (the final scaling factor can still move, see "Known limitation");
+* **not** input-subtracted, ratio or log-transformed tracks, and not smoothed or peak-only tracks.
+  Negative values are rejected; other transformations cannot be detected, so check how the track was made;
+* on the genome given with `--genome` (chromosome lengths are checked; a mismatch stops the run).
+
+[benchmark/](benchmark/) compares the bigWig route with the published BAM route and spike-in factors
+for 33 public samples. It does **not** separate the effects of read extension, smoothing or
+filtering in the bigWigs, and the BAM-route values are the published ones, not re-run.
+
+## Known limitation: numerically unstable scaling factors
+
+In the benchmark, `CalculateSF()` with the default `--min_first_turn auto` gave a different scaling
+factor for 28 of 33 samples after a relative perturbation of 1e-14 of the parsed matrix (largest
+change x1.78). The cause is the automatic first-turning-point step, whose second density is nearly
+flat, so its maximum is decided by round-off. The same instability applies to BAM input. Consequences:
+
+* the same data can give different factors in one-process runs and in this pipeline, whose
+  `CSIF_SCALE` step re-reads the parsed matrix from a file (13 of 33 differed in the benchmark);
+* a single sample's factor is only reliable to about +/-0.4 on the log2 scale (range seen: x1.0-1.78);
+* fixing the first turning point removed the instability in the benchmark (`--min_first_turn 0.5`:
+  0 of 33 samples changed). This is an exploratory finding on one dataset; it changes the estimator
+  relative to the published values.
+
+Group-level fold changes (mean factor of K27M over WT) were not clearly more stable: across 50 noise
+replicates they varied by x1.13-1.37 (largest over smallest) per group, versus a median x1.0-1.5 for single
+samples (`benchmark/dataset1_bigwig_group_fold_change_under_noise.csv`).
 
 ## Usage
 
-Prepare a samplesheet with one row per BAM:
+Samplesheet, one row per bigWig (local path or http(s)/ftp URL):
 
 ```csv
-sample,bam,antibody,group,color
-K27M_rep1,/path/to/bams/H3K27me3-K27M.rep1.rmdup.bam,H3K27me3,K27M,green
-K27M_rep2,/path/to/bams/H3K27me3-K27M.rep2.rmdup.bam,H3K27me3,K27M,green
-WT_rep1,/path/to/bams/H3K27me3-WT.rep1.rmdup.bam,H3K27me3,WT,grey
-WT_rep2,/path/to/bams/H3K27me3-WT.rep2.rmdup.bam,H3K27me3,WT,grey
+sample,bigwig,antibody,group,color,reads
+K27M_rep1,/path/to/bigwigs/H3K27me3-K27M.rep1.bw,H3K27me3,K27M,green,25000000
+K27M_rep2,/path/to/bigwigs/H3K27me3-K27M.rep2.bw,H3K27me3,K27M,green,31000000
+WT_rep1,https://example.org/tracks/H3K27me3-WT.rep1.bw,H3K27me3,WT,grey,28000000
+WT_rep2,https://example.org/tracks/H3K27me3-WT.rep2.bw,H3K27me3,WT,grey,
 ```
 
-`color` is optional (used in plots when every row has one). Use duplicate-removed BAMs with
-low-quality reads filtered.
-
-Run on the St. Jude HPC with the [nf-core `stjude` institutional profile](https://nf-co.re/configs/stjude/)
-(LSF executor + Singularity):
+`color` and `reads` are optional. `reads` is the sample's number of mapped reads; leave it empty to use
+`--pseudo_depth`. All rows are analysed together in one run, so put every sample that has to be
+comparable in the same samplesheet, and run each cell system / antibody combination you do not want
+compared with each other as separate runs (scaling factors from different runs are not comparable).
 
 ```bash
-nextflow run hongjianjin/ChIPseqSpikeInFree-nf \
-    -r v1.2.8 \
-    -profile stjude \
-    --input samplesheet.csv \
-    --outdir results \
-    --cohort H3K27me3 \
-    --genome hg38
+nextflow run . -profile stjude --input samplesheet.csv --outdir results --cohort H3K27me3 --genome hg38
 ```
 
-Nextflow 24.10 or newer (with Java 17+) is required. If the cluster's `nextflow` modules are
-older, use a conda environment, which bundles its own Java:
+Wiring test (no data needed): `nextflow run . -profile test -stub --outdir results_test`.
+
+### Before the first run
+
+1. Make the tool executable: `chmod +x bin/csif_bigwig_bin.py` (or `git update-index --chmod=+x bin/csif_bigwig_bin.py`
+   before pushing). Files written on Windows have no executable bit and Nextflow runs the script from `bin/`.
+2. Build and push the container (`containers/chipseqspikeinfree-bigwig/Dockerfile`), or point
+   `--chipseqspikeinfree_container` at your own image.
+3. Run the stub test above.
+
+### Without Nextflow
 
 ```bash
-conda create -n nextflow -c conda-forge -c bioconda nextflow=24.10.5
-conda activate nextflow
+python3 bin/csif_bigwig_bin.py --bigwig sample.bw --id sample.bw --genome mm9 --prefix sample   # per sample
 ```
 
-`-r v1.2.8` pins this release; use `-r main -latest` for the development version.
+This step is tested. The remaining steps (merge the per-sample tables on the `bin` column into
+`<prefix>_rawCounts.txt`, write the metadata file, then run
+`Rscript run_ChIPseqSpikeInFree.R -L bam.lst -G mm9 -m sample_meta.txt -o <prefix>`, which loads the existing
+rawCounts file) were **not run as a command here**: the benchmark called the package's
+`ParseReadCounts()`, `CalculateSF()`, `PlotDistr()` and `BoxplotSF()` directly from R.
 
-`-profile stjude` is pulled from [nf-core/configs](https://github.com/nf-core/configs) at runtime.
-On nodes without internet access, clone nf-core/configs and pass `--custom_config_base /path/to/configs`.
-
-Other profiles: `docker`, `singularity`, `apptainer`, `test`, `debug`.
-
-See [docs/usage.md](docs/usage.md) for all options and [docs/output.md](docs/output.md) for the
-output layout. `nextflow run hongjianjin/ChIPseqSpikeInFree-nf --help` lists every parameter.
+See [docs/usage.md](docs/usage.md) and [docs/output.md](docs/output.md).
 
 ## Container
 
-Both processes run in one container with R and ChIPseqSpikeInFree, set with
-`--chipseqspikeinfree_container` (default `ghcr.io/hongjianjin/chipseqspikeinfree:1.2.6`).
-The image is built from [containers/chipseqspikeinfree/Dockerfile](containers/chipseqspikeinfree/Dockerfile)
-by the [Build ChIPseqSpikeInFree container](.github/workflows/build-container.yml) GitHub Actions
-workflow, on pushes that change the Dockerfile or manually for another package tag:
+`--chipseqspikeinfree_container` (default `ghcr.io/hongjianjin/chipseqspikeinfree-bigwig:0.1.0`,
+**not published**). Build it from [containers/chipseqspikeinfree-bigwig/Dockerfile](containers/chipseqspikeinfree-bigwig/Dockerfile),
+which extends the published ChIPseqSpikeInFree 1.2.6 image with Python and pybigtools.
 
-```bash
-gh workflow run build-container.yml -R hongjianjin/ChIPseqSpikeInFree-nf -f csif_ref=1.2.6
-```
+## Tests
 
-You can also point the parameter at a local `.sif` file.
+* `python3 tests/test_bigwig_bin.py`: 8 checks of the binning tool on synthetic bigWigs (needs
+  `pybigtools`, `numpy`; passes with pybigtools 0.3.0, numpy 2.4.6).
+* The bins were compared with the package's `GenerateBins()` for hg19, hg38, mm9 and mm10, with and
+  without `chr`: identical (see benchmark/).
 
-## Testing
+## Credits and license
 
-A wiring test on placeholder BAMs (downloaded from this repo, so it runs from any folder):
-
-```bash
-nextflow run hongjianjin/ChIPseqSpikeInFree-nf -r main -profile test -stub --outdir results_test
-```
-
-`-profile test` uses no container; add `stjude` (`-profile stjude,test`) to also check the
-Singularity image and LSF submission.
-
-## Credits
-
-ChIPseqSpikeInFree-nf was written by Hongjian Jin (St. Jude Children's Research Hospital) on top
-of the ChIPseqSpikeInFree R package.
-
-## License
-
-ChIPseqSpikeInFree-nf is released under the [Apache License 2.0](LICENSE). The ChIPseqSpikeInFree
-R package it runs is GPL-3.
+Built on ChIPseqSpikeInFree-nf and the ChIPseqSpikeInFree R package by Hongjian Jin (St. Jude
+Children's Research Hospital). Pipeline code: Apache License 2.0 ([LICENSE](LICENSE)); the R package
+is GPL-3. The chrom.sizes files in `assets/chrom_sizes/` are copied from that package.
 
 ## Citations
 
-If you use ChIPseqSpikeInFree-nf, please cite:
+If you use this pipeline, please cite:
 
 > Jin H, Kasper LH, Larson JD, et al. ChIPseqSpikeInFree: a ChIP-seq normalization approach to
 > reveal global changes in histone modifications without spike-in. *Bioinformatics*. 2020;36(4):1270-1272.

@@ -1,0 +1,16 @@
+Gate 1 benchmark: pre-specified criteria (written 2026-11-20T11:13:02, before any bigWig-based SF was computed)
+
+Data: GSE108344 (Larson et al. 2019), the 33 samples of Dataset 1 in btz720 Supplementary Table 1.
+Runs: one ChIPseqSpikeInFree run per (cell system x histone mark) group, as in the paper:
+  DIPG H3K27ac (11), DIPG H3K27me3 (11), DIPG H3K4me3 (5), H-NSC H3K27me3 (6).
+Settings: bin 1000 bp, mm9, default calibration (minFirstTurn auto, maxLastTurn 0.99, cutoffQC 1.2), pseudo-depth 20e6 reads/sample.
+Reference values: Table 1 'Scaling factor (ChIPseqSpikeInFree)' (BAM route) and 'Scaling factor (SpikeIn)'.
+
+Primary pass criteria (bigWig route vs published BAM route):
+  P1. Pearson r of log2(SF) over all 33 samples >= 0.90
+  P2. median |log2(SF_bigWig / SF_BAM)| <= 0.15
+  P3. <= 10% of samples (<= 3 of 33) fail QC in the bigWig route (published BAM route: 0 fail)
+Gate 1 passes only if P1, P2 and P3 all hold. If any fails, the bigWig route is reported as not reproducing the BAM route.
+
+Secondary (reported, not gated): Spearman rho of SF vs spike-in SF within each group, bigWig route vs BAM route.
+Analysis choices not to be tuned after seeing results: bin size, calibration parameters, pseudo-depth (20e6). Sensitivity to pseudo-depth is reported separately.

@@ -1,0 +1,11 @@
+dataset,ref,system,mark,mutant,control,n_mutant,n_control,log2_spike,log2_csif_bam
+1,"Jon et al., 2019",DIPG,H3K27Ac,K27M,WT,6,5,-0.399,-0.77
+1,"Jon et al., 2019",DIPG,H3K27me3,K27M,WT,6,5,1.863,2.085
+1,"Jon et al., 2019",DIPG,H3K4me3,K27M,WT,2,3,0.347,0.275
+1,"Jon et al., 2019",H-NSC,H3K27me3,K27M,WT,3,3,1.836,1.909
+2,"Pathania et al., 2017",NPC,H3K27me3,K27M,WT,2,2,2.1,2.06
+3,"Harutyunyan et al., 2019",BT245,H3K27me3,K27M,K27M-KO,2,2,3.49,3.272
+3,"Harutyunyan et al., 2019",DIPGXIII,H3K27me3,K27M,K27M-KO,1,2,1.88,2.199
+3,"Harutyunyan et al., 2019",G477,H3K27me3,K27M,K27R,1,1,4.585,4.485
+4,"Fang et al., 2016",T/C28a2,H3K36me2,K36M,WT,4,2,2.585,0.507
+4,"Fang et al., 2016",T/C28a2,H3K36me3,K36M,WT,4,2,1.233,0.623

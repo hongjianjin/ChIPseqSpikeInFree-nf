@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ChIPseqSpikeInFree-nf
+    ChIPseqSpikeInFree-bigwig-nf
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Spike-in free ChIP-seq scaling factors with ChIPseqSpikeInFree
+    Spike-in free ChIP-seq scaling factors with ChIPseqSpikeInFree, from bigWig coverage
     https://github.com/stjude/ChIPseqSpikeInFree
 ----------------------------------------------------------------------------------------
 */
@@ -29,7 +29,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_chipseqspik
 workflow CHIPSEQSPIKEINFREE_NF {
 
     take:
-    samplesheet // channel: [ val(meta), path(bam) ]
+    samplesheet // channel: [ val(meta), val(bigwig: local path or URL) ]
 
     main:
     CHIPSEQSPIKEINFREE (

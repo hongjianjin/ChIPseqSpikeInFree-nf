@@ -1,0 +1,5 @@
+group,n,rho_bigwig_vs_bam,rho_bigwig_vs_spikein,rho_bam_vs_spikein,fold_K27M_over_WT_spikein,fold_K27M_over_WT_bam,fold_K27M_over_WT_bigwig,median_abs_log2_bigwig_vs_bam
+DIPG H3K27Ac,11,0.882,0.673,0.591,0.758,0.587,0.58,0.017
+DIPG H3K27me3,11,0.9,0.836,0.955,3.638,4.244,4.03,0.14
+DIPG H3K4me3,5,0.3,0.7,0.7,1.272,1.21,1.25,0.009
+H-NSC H3K27me3,6,1.0,0.657,0.657,3.57,3.756,3.098,0.288

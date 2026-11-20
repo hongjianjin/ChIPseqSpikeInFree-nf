@@ -45,7 +45,7 @@ workflow PIPELINE_INITIALISATION {
         .set { ch_samplesheet }
 
     emit:
-    samplesheet = ch_samplesheet // channel: [ val(meta), path(bam) ]
+    samplesheet = ch_samplesheet // channel: [ val(meta), val(bigwig: local path or URL) ]
 }
 
 /*

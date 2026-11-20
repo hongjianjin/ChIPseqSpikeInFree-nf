@@ -1,0 +1,8 @@
+comparison,n,pearson_r_log2,spearman_rho,median_abs_log2_diff
+"bigWig, pipeline path (CalculateSF on re-read matrix) vs published BAM route",33,0.977,0.964,0.129
+"bigWig, pipeline path (CalculateSF on re-read matrix) vs spike-in",33,0.834,0.775,0.639
+"bigWig, single in-memory run vs published BAM route",33,0.977,0.976,0.101
+"bigWig, single in-memory run vs spike-in",33,0.836,0.77,0.644
+"bigWig, minFirstTurn=0.5 (exploratory) vs published BAM route",33,0.979,0.967,0.143
+"bigWig, minFirstTurn=0.5 (exploratory) vs spike-in",33,0.88,0.767,0.658
+published BAM route vs spike-in,33,0.868,0.773,0.543
